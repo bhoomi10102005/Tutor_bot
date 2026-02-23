@@ -1,0 +1,56 @@
+# ── Environment ───────────────────────────────────────────────────────────────
+.env
+*.env
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+.virtualenv/
+
+# ── Flask / Alembic ───────────────────────────────────────────────────────────
+instance/
+*.log
+flask_session/
+
+# ── Streamlit ─────────────────────────────────────────────────────────────────
+.streamlit/secrets.toml
+
+# ── Test / temp files ─────────────────────────────────────────────────────────
+fl_out.txt
+fl_err.txt
+flask_out.txt
+flask_err.txt
+*.tmp
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Uploads / user data ───────────────────────────────────────────────────────
+uploads/
+*.pdf
+*.docx
+*.txt
+!t.txt
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+*.override.yml
