@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# ── Custom CSS (Calm Tutor palette) ────────────────────────────────────────
+# ── Custom CSS (Light theme) ─────────────────────────────────────────────────
 st.markdown(
     """
     <style>
@@ -19,24 +19,21 @@ st.markdown(
 
     html, body, [class*="css"] {
         font-family: 'Inter', system-ui, sans-serif;
-        background-color: #0B1220;
-        color: #E6EAF2;
     }
-    .stApp { background-color: #0B1220; }
 
     .dash-card {
-        background: #111B2E;
-        border: 1px solid #22304A;
+        background: #E8F0FE;
+        border: 1px solid #C7D7F9;
         border-radius: 12px;
         padding: 1.4rem 1.6rem;
     }
-    .dash-card h3 { color: #E6EAF2; margin-bottom: 0.4rem; }
-    .dash-card p  { color: #A7B0C0; margin: 0; font-size: 0.9rem; }
+    .dash-card h3 { color: #1F2937; margin-bottom: 0.4rem; }
+    .dash-card p  { color: #6B7280; margin: 0; font-size: 0.9rem; }
 
     .badge {
         display: inline-block;
-        background: #6D5EF7;
-        color: #E6EAF2;
+        background: #4F8BF9;
+        color: #fff;
         border-radius: 6px;
         padding: 0.15rem 0.6rem;
         font-size: 0.75rem;
@@ -44,22 +41,15 @@ st.markdown(
         margin-left: 0.5rem;
     }
     div.stButton > button {
-        background: #6D5EF7;
-        color: #E6EAF2;
+        background: #4F8BF9;
+        color: #fff;
         border: none;
         border-radius: 8px;
         padding: 0.45rem 1.1rem;
         font-weight: 600;
         transition: background 0.2s;
     }
-    div.stButton > button:hover { background: #5a4dd6; }
-
-    /* danger button */
-    div[data-testid="logout-btn"] > button {
-        background: #1e2a3a !important;
-        border: 1px solid #22304A !important;
-        color: #A7B0C0 !important;
-    }
+    div.stButton > button:hover { background: #3B72E0; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -82,9 +72,9 @@ display_name = user.get("username") or user["email"]
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown(
-        f"<div style='color:#A7B0C0;font-size:0.8rem;margin-bottom:0.3rem'>Signed in as</div>"
-        f"<div style='color:#E6EAF2;font-weight:600'>{display_name}</div>"
-        f"<div style='color:#A7B0C0;font-size:0.75rem'>{user['email']}</div>",
+        f"<div style='color:#6B7280;font-size:0.8rem;margin-bottom:0.3rem'>Signed in as</div>"
+        f"<div style='color:#1F2937;font-weight:600'>{display_name}</div>"
+        f"<div style='color:#6B7280;font-size:0.75rem'>{user['email']}</div>",
         unsafe_allow_html=True,
     )
     st.divider()
@@ -96,7 +86,7 @@ with st.sidebar:
 # ── Dashboard header ──────────────────────────────────────────────────────────
 st.markdown(f"## 👋 Welcome back, **{display_name}**")
 st.markdown(
-    "<p style='color:#A7B0C0;margin-top:-0.5rem'>Your private study workspace is ready.</p>",
+    "<p style='color:#6B7280;margin-top:-0.5rem'>Your private study workspace is ready.</p>",
     unsafe_allow_html=True,
 )
 st.divider()

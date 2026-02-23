@@ -12,7 +12,7 @@ st.set_page_config(
     layout="centered",
 )
 
-# ── Custom CSS (Calm Tutor palette) ──────────────────────────────────────────
+# ── Custom CSS (Light theme) ─────────────────────────────────────────────────
 st.markdown(
     """
     <style>
@@ -20,14 +20,11 @@ st.markdown(
 
     html, body, [class*="css"] {
         font-family: 'Inter', system-ui, sans-serif;
-        background-color: #0B1220;
-        color: #E6EAF2;
     }
-    .stApp { background-color: #0B1220; }
 
     .auth-card {
-        background: #111B2E;
-        border: 1px solid #22304A;
+        background: #E8F0FE;
+        border: 1px solid #C7D7F9;
         border-radius: 14px;
         padding: 2.5rem 2rem 2rem 2rem;
         max-width: 420px;
@@ -36,28 +33,28 @@ st.markdown(
     .auth-title {
         font-size: 1.8rem;
         font-weight: 700;
-        color: #E6EAF2;
+        color: #1F2937;
         text-align: center;
         margin-bottom: 0.25rem;
     }
     .auth-sub {
         font-size: 0.9rem;
-        color: #A7B0C0;
+        color: #6B7280;
         text-align: center;
         margin-bottom: 1.8rem;
     }
 
     div[data-testid="stTextInput"] input {
-        background: #0B1220 !important;
-        border: 1px solid #22304A !important;
+        background: #F7F9FC !important;
+        border: 1px solid #C7D7F9 !important;
         border-radius: 8px !important;
-        color: #E6EAF2 !important;
+        color: #1F2937 !important;
     }
-    div[data-testid="stTextInput"] label { color: #A7B0C0 !important; }
+    div[data-testid="stTextInput"] label { color: #374151 !important; }
 
     div.stButton > button {
-        background: #6D5EF7;
-        color: #E6EAF2;
+        background: #4F8BF9;
+        color: #fff;
         border: none;
         border-radius: 8px;
         padding: 0.55rem 1.2rem;
@@ -65,15 +62,15 @@ st.markdown(
         width: 100%;
         transition: background 0.2s;
     }
-    div.stButton > button:hover { background: #5a4dd6; }
+    div.stButton > button:hover { background: #3B72E0; }
 
     .stTabs [data-baseweb="tab"] {
-        color: #A7B0C0;
+        color: #6B7280;
         font-weight: 500;
     }
     .stTabs [aria-selected="true"] {
-        color: #6D5EF7 !important;
-        border-bottom: 2px solid #6D5EF7 !important;
+        color: #4F8BF9 !important;
+        border-bottom: 2px solid #4F8BF9 !important;
     }
     </style>
     """,
