@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tutor Bot | Personal Study Workspace</title>
+  <title>Tutor Bot | Your Personal AI Study Workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/base.css">
   <link rel="stylesheet" href="./assets/css/landing.css">
   <script src="./config.js"></script>
@@ -17,8 +17,8 @@
       <a class="brand" href="./index.html">Tutor Bot</a>
       <div class="topbar-actions">
         <span class="user-chip" data-user-slot hidden></span>
-        <a class="button button-ghost" href="./pages/login.html" data-guest-action="signin">Sign In</a>
-        <a class="button button-solid" href="./pages/signup.html" data-guest-action="signup">Get Started</a>
+        <a class="button button-ghost" href="./pages/login.html" data-guest-action="signin">Log In</a>
+        <a class="button button-solid" href="./pages/signup.html" data-guest-action="signup">Create Free Account</a>
         <button class="button button-ghost" type="button" data-signout hidden>Sign Out</button>
       </div>
     </div>
@@ -26,45 +26,122 @@
 
   <main>
     <section class="hero container">
-      <div class="hero-copy-block">
-        <p class="eyebrow" data-reveal>Personal AI Study Workspace</p>
-        <h1 data-reveal>Learn faster with your own focused tutor.</h1>
-        <p class="hero-copy" data-reveal>
-          Upload notes, ask direct questions, and turn weak topics into targeted practice. Keep your learning private and structured.
+      <div class="hero-copy">
+        <p class="eyebrow" data-reveal>AI STUDY WORKSPACE</p>
+        <h1 data-reveal>
+          Tutor Bot is your private study partner for notes, questions, quizzes, and revision.
+        </h1>
+        <p class="hero-description" data-reveal>
+          Instead of switching across chat apps, notes, and quiz tools, Tutor Bot keeps your study workflow in one focused place.
+          Upload material, ask clear questions, and practice weak topics with a single account.
         </p>
         <div class="hero-actions" data-reveal>
-          <a class="button button-solid" href="./pages/signup.html" data-guest-action="signup">Create Account</a>
-          <a class="button button-ghost" href="./pages/login.html" data-guest-action="signin">I Already Have an Account</a>
+          <a class="button button-solid" href="./pages/signup.html" data-guest-action="signup">Start Learning Faster</a>
+          <a class="button button-ghost" href="#what-it-does">See What It Can Do</a>
         </div>
       </div>
-      <aside class="hero-panel" data-reveal>
-        <h2>Built For Continuous Revision</h2>
+      <aside class="hero-summary" data-reveal>
+        <h2>What is Tutor Bot exactly?</h2>
+        <p>
+          Tutor Bot is a personal AI study system that organizes your learning around your own material.
+          It is designed for students who want focused explanations, source-based answers, and measurable improvement.
+        </p>
         <ul>
-          <li>Auth-backed private workspace</li>
-          <li>Backend API with JWT security</li>
-          <li>Ready for upcoming RAG, quiz, and analytics phases</li>
+          <li>Personal account with secure sign-in</li>
+          <li>User-scoped workspace and data isolation</li>
+          <li>Structured flow: learn, practice, improve</li>
         </ul>
       </aside>
     </section>
 
-    <section class="features container">
-      <article class="feature-card" data-reveal>
-        <h3>Chat Tutor</h3>
-        <p>Ask concept questions and get grounded explanations from your own study material.</p>
-      </article>
-      <article class="feature-card" data-reveal>
-        <h3>Document Grounding</h3>
-        <p>Ingest PDFs and notes so every answer can stay anchored to what you uploaded.</p>
-      </article>
-      <article class="feature-card" data-reveal>
-        <h3>Quiz Workflow</h3>
-        <p>Create focused quizzes from your weak areas and track improvement over time.</p>
-      </article>
+    <section class="section container" id="what-it-does">
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">WHAT IT CAN DO</p>
+        <h2>Core capabilities for real study outcomes</h2>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card" data-reveal>
+          <h3>Context-Aware Tutor Chat</h3>
+          <p>Ask direct questions and get explanations grounded in your material, not random generic responses.</p>
+        </article>
+        <article class="feature-card" data-reveal>
+          <h3>Document-Driven Learning</h3>
+          <p>Bring your notes, slides, or PDFs so your learning assistant is aligned to your syllabus and exams.</p>
+        </article>
+        <article class="feature-card" data-reveal>
+          <h3>Targeted Quiz Practice</h3>
+          <p>Generate focused practice from weak topics and reinforce concepts with short, repeatable drills.</p>
+        </article>
+        <article class="feature-card" data-reveal>
+          <h3>Progress Visibility</h3>
+          <p>Track your learning rhythm over time to spot gaps early and revise before they become bigger problems.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">WHY STUDENTS CHOOSE IT</p>
+        <h2>Practical advantages over scattered tools</h2>
+      </div>
+      <div class="pros-grid">
+        <article class="pro-item" data-reveal>
+          <h3>One workflow, less friction</h3>
+          <p>Notes, Q&A, and practice live together so you spend more time learning and less time switching tabs.</p>
+        </article>
+        <article class="pro-item" data-reveal>
+          <h3>Built for revision cycles</h3>
+          <p>Turn confusion into focused follow-up questions and then convert those topics into quizzes instantly.</p>
+        </article>
+        <article class="pro-item" data-reveal>
+          <h3>Private by default</h3>
+          <p>Your workspace is tied to your account, with protected endpoints and authenticated access patterns.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-steps container">
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">HOW IT WORKS</p>
+        <h2>Three simple steps</h2>
+      </div>
+      <ol class="steps-list">
+        <li class="step-item" data-reveal>
+          <span class="step-number">1</span>
+          <div>
+            <h3>Create your account</h3>
+            <p>Set up your workspace in less than a minute.</p>
+          </div>
+        </li>
+        <li class="step-item" data-reveal>
+          <span class="step-number">2</span>
+          <div>
+            <h3>Study with focused guidance</h3>
+            <p>Ask clear questions and keep concepts organized around your topics.</p>
+          </div>
+        </li>
+        <li class="step-item" data-reveal>
+          <span class="step-number">3</span>
+          <div>
+            <h3>Practice and improve</h3>
+            <p>Convert weak areas into repeatable quiz practice and track your progress.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="cta container" data-reveal>
+      <h2>Start building a smarter study routine today.</h2>
+      <p>Meaningful learning is consistent, focused, and measurable. Tutor Bot helps you do exactly that.</p>
+      <div class="cta-actions">
+        <a class="button button-solid" href="./pages/signup.html" data-guest-action="signup">Create Account</a>
+        <a class="button button-ghost" href="./pages/login.html" data-guest-action="signin">I Already Have an Account</a>
+      </div>
     </section>
   </main>
 
   <footer class="footer container">
-    <p>Backend API: <code data-api-base-url></code></p>
+    <p>Connected backend API: <code data-api-base-url></code></p>
   </footer>
 
   <script type="module" src="./assets/js/landing.js"></script>
