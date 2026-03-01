@@ -41,14 +41,16 @@ def create_app(env: str = None) -> Flask:
 
     with app.app_context():
         # Import models so Flask-Migrate can detect them
-        from app.db.models import User, Document, DocumentIngestion, Chunk  # noqa: F401
+        from app.db.models import User, Document, DocumentIngestion, Chunk, Chat, ChatMessage, ChatMessageSource  # noqa: F401
 
         # Register blueprints
         from app.api.auth import auth_bp
         from app.api.dev import dev_bp
         from app.api.documents import documents_bp
+        from app.api.chat import chat_bp
         app.register_blueprint(auth_bp)
         app.register_blueprint(dev_bp)
         app.register_blueprint(documents_bp)
+        app.register_blueprint(chat_bp)
 
     return app
