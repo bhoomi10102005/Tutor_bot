@@ -4,6 +4,9 @@ import {
   listChatSessions,
   getChatMessages,
   sendChatMessage,
+  listDocuments,
+  getChatDocuments,
+  setChatDocuments,
 } from "../../components/api_client.js";
 import { clearSession, getSession } from "../../components/session.js";
 
@@ -39,9 +42,20 @@ const typingIndicator  = document.getElementById("typing-indicator");
 const chatInput        = document.getElementById("chat-input");
 const sendBtn          = document.getElementById("send-btn");
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let activeChatId = null;
-let isSending    = false;
+// Doc picker DOM refs
+const docsContextStrip  = document.getElementById("docs-context-strip");
+const docsContextLabel  = document.getElementById("docs-context-label");
+const docsSelectBtn     = document.getElementById("docs-select-btn");
+const docPickerOverlay  = document.getElementById("doc-picker-overlay");
+const docPickerList     = document.getElementById("doc-picker-list");
+const docPickerClose    = document.getElementById("doc-picker-close");
+const docPickerClear    = document.getElementById("doc-picker-clear");
+const docPickerSave     = document.getElementById("doc-picker-save");
+
+// ── State ───────────────────────────────────────────────────────────────
+let activeChatId  = null;
+let isSending     = false;
+let activeDocSelection = []; // [{id, title, source_type, filename}] for current chat
 
 // ── Session list ──────────────────────────────────────────────────────────────
 async function loadSessions() {
@@ -111,6 +125,7 @@ function setActiveSessionButton(chatId) {
 async function switchSession(chatId) {
   if (isSending) return;
   activeChatId = chatId;
+  activeDocSelection = [];
   setActiveSessionButton(chatId);
   enableInput(false);
   clearMessages();
@@ -119,8 +134,14 @@ async function switchSession(chatId) {
   appendLoadingBubble("Loading messages…");
 
   try {
-    const resp = await getChatMessages(getToken(), chatId);
-    const messages = Array.isArray(resp) ? resp : [];
+    // Load messages and document selection in parallel
+    const [msgResp, docResp] = await Promise.all([
+      getChatMessages(getToken(), chatId),
+      getChatDocuments(getToken(), chatId).catch(() => ({ documents: [] })),
+    ]);
+    const messages = Array.isArray(msgResp) ? msgResp : [];
+    activeDocSelection = docResp?.documents || [];
+    updateDocsContextStrip();
     clearMessages();
     if (!messages.length) {
       showPlaceholder(true, "New chat", "Ask your first question below.");
@@ -325,6 +346,139 @@ function showPlaceholder(show, heading = "Select or start a chat", body = "Pick 
 function enableInput(enabled) {
   chatInput.disabled = !enabled || !activeChatId;
   sendBtn.disabled   = !enabled || !activeChatId;
+  if (docsContextStrip) docsContextStrip.hidden = !activeChatId;
+}
+
+// ── Document context strip ────────────────────────────────────────────────────
+
+function updateDocsContextStrip() {
+  if (!activeChatId) return;
+  if (!docsContextStrip) return;
+  docsContextStrip.hidden = false;
+  if (!activeDocSelection || activeDocSelection.length === 0) {
+    docsContextLabel.textContent = "All documents";
+  } else if (activeDocSelection.length === 1) {
+    docsContextLabel.textContent = activeDocSelection[0].title || "1 document";
+  } else {
+    docsContextLabel.textContent = `${activeDocSelection.length} documents`;
+  }
+}
+
+// ── Document picker ───────────────────────────────────────────────────────────
+
+// IDs checked in the picker modal (may differ from activeDocSelection until saved)
+let pendingDocIds = new Set();
+
+async function openDocPicker() {
+  if (!activeChatId) return;
+  // Seed pending state from current selection
+  pendingDocIds = new Set(activeDocSelection.map((d) => d.id));
+
+  docPickerList.innerHTML =
+    '<p style="color:var(--muted);font-size:0.9rem;">Loading…</p>';
+  docPickerOverlay.hidden = false;
+  document.body.style.overflow = "hidden";
+
+  try {
+    const resp = await listDocuments(getToken());
+    const docs = Array.isArray(resp)
+      ? resp
+      : Array.isArray(resp?.documents)
+      ? resp.documents
+      : [];
+
+    if (!docs.length) {
+      docPickerList.innerHTML =
+        '<p style="color:var(--muted);font-size:0.9rem;">No documents uploaded yet.</p>';
+      return;
+    }
+
+    docPickerList.innerHTML = "";
+    docs.forEach((doc) => {
+      const item = document.createElement("label");
+      item.className = "doc-picker-item";
+      item.htmlFor = `dp-${doc.id}`;
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.id = `dp-${doc.id}`;
+      cb.value = doc.id;
+      cb.checked = pendingDocIds.has(doc.id);
+      cb.addEventListener("change", () => {
+        if (cb.checked) {
+          pendingDocIds.add(doc.id);
+        } else {
+          pendingDocIds.delete(doc.id);
+        }
+      });
+
+      const meta = document.createElement("div");
+      meta.className = "doc-picker-item-meta";
+      meta.innerHTML = `
+        <span class="doc-picker-item-title">${escHtml(doc.title || "Untitled")}</span>
+        <span class="doc-picker-item-type">${escHtml(doc.source_type || "")}</span>
+      `.trim();
+
+      item.appendChild(cb);
+      item.appendChild(meta);
+      docPickerList.appendChild(item);
+    });
+  } catch (err) {
+    docPickerList.innerHTML = `<p style="color:#a13716;font-size:0.9rem;">Error loading documents: ${
+      err instanceof APIError ? err.message : "unknown error"
+    }</p>`;
+  }
+}
+
+function closeDocPicker() {
+  docPickerOverlay.hidden = true;
+  document.body.style.overflow = "";
+}
+
+async function saveDocSelection() {
+  const ids = [...pendingDocIds];
+  docPickerSave.disabled = true;
+  try {
+    const resp = await setChatDocuments(getToken(), activeChatId, ids);
+    // Rebuild activeDocSelection from the picker's checked items
+    const allCheckboxes = docPickerList.querySelectorAll("input[type=checkbox]");
+    activeDocSelection = [];
+    allCheckboxes.forEach((cb) => {
+      if (cb.checked) {
+        const label = cb.closest("label");
+        const title = label?.querySelector(".doc-picker-item-title")?.textContent || cb.value;
+        activeDocSelection.push({ id: cb.value, title });
+      }
+    });
+    updateDocsContextStrip();
+    closeDocPicker();
+  } catch (err) {
+    window.alert(
+      "Failed to save document selection: " +
+        (err instanceof APIError ? err.message : "unknown error")
+    );
+  } finally {
+    docPickerSave.disabled = false;
+  }
+}
+
+// Event listeners for picker
+if (docsSelectBtn)  docsSelectBtn.addEventListener("click", openDocPicker);
+if (docPickerClose) docPickerClose.addEventListener("click", closeDocPicker);
+if (docPickerSave)  docPickerSave.addEventListener("click", saveDocSelection);
+if (docPickerClear) {
+  docPickerClear.addEventListener("click", () => {
+    pendingDocIds.clear();
+    docPickerList.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+      cb.checked = false;
+    });
+  });
+}
+// Close on overlay backdrop click
+if (docPickerOverlay) {
+  docPickerOverlay.addEventListener("click", (e) => {
+    if (e.target === docPickerOverlay) closeDocPicker();
+  });
 }
 
 function scrollToBottom() {

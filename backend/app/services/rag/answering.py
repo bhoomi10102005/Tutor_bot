@@ -122,6 +122,7 @@ def generate_answer(
     model: str,
     history: List[dict] | None = None,
     top_k: int = 5,
+    document_ids: List[str] | None = None,
 ) -> dict:
     """
     Generate a RAG-augmented answer for *question*.
@@ -139,6 +140,9 @@ def generate_answer(
         Do not include the current question; it is appended automatically.
     top_k    : int
         Number of chunks to retrieve (default 5).
+    document_ids : list[str] | None
+        When provided, restrict RAG search to these document IDs only.
+        ``None`` searches all of the user's documents (default behaviour).
 
     Returns
     -------
@@ -151,7 +155,12 @@ def generate_answer(
 
     # ── 1. Retrieve relevant chunks ──────────────────────────────────────────
     try:
-        sources = retrieve_chunks(query_text=question, user_id=user_id, top_k=top_k)
+        sources = retrieve_chunks(
+            query_text=question,
+            user_id=user_id,
+            top_k=top_k,
+            document_ids=document_ids if document_ids else None,
+        )
     except WrapperError as exc:
         log.warning("answering: retrieval failed, proceeding without context: %s", exc)
         sources = []

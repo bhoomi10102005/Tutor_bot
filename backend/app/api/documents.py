@@ -289,3 +289,89 @@ def ingestion_status(doc_id: str, ingestion_id: str):
     result = _ingestion_dict(ingestion)
     result["chunk_count"] = chunk_count
     return jsonify(result), 200
+
+
+# ── POST /api/documents/<id>/reingest ─────────────────────────────────────────
+
+@documents_bp.post("/<string:doc_id>/reingest")
+@jwt_required()
+def reingest_document(doc_id: str):
+    """
+    Retry ingestion for a document whose previous ingestion failed or is missing.
+    Creates a fresh DocumentIngestion row and re-runs the pipeline.
+    """
+    user_id = get_jwt_identity()
+
+    doc = Document.query.filter_by(id=doc_id, user_id=user_id, is_deleted=False).first()
+    if not doc:
+        return jsonify({"error": "Document not found"}), 404
+
+    # Find the most recent previous ingestion to recover file_path / text_snapshot
+    prev = (
+        DocumentIngestion.query
+        .filter_by(document_id=doc_id, user_id=user_id)
+        .order_by(DocumentIngestion.created_at.desc())
+        .first()
+    )
+
+    if doc.source_type == "upload":
+        file_path = prev.file_path if prev else None
+        if not file_path:
+            return jsonify({"error": "No file path found — cannot re-ingest"}), 400
+        if not os.path.exists(file_path):
+            return jsonify({"error": "Original file is no longer on disk — please re-upload"}), 400
+
+        ingestion = DocumentIngestion(
+            id=str(uuid.uuid4()),
+            document_id=doc.id,
+            user_id=user_id,
+            source_type="upload",
+            file_path=file_path,
+            status="processing",
+        )
+        db.session.add(ingestion)
+        db.session.commit()
+
+        try:
+            ingest_upload(doc, ingestion, file_path)
+        except Exception as exc:
+            log.warning("Re-ingest (upload) failed for doc=%s: %s", doc.id, exc)
+            return jsonify({
+                "document": _doc_dict(doc),
+                "ingestion": _ingestion_dict(ingestion),
+                "warning": "Re-ingestion failed. See ingestion status for details.",
+            }), 202
+
+    elif doc.source_type == "text":
+        text = doc.original_text or (prev.text_snapshot if prev else None)
+        if not text:
+            return jsonify({"error": "No text content found — cannot re-ingest"}), 400
+
+        ingestion = DocumentIngestion(
+            id=str(uuid.uuid4()),
+            document_id=doc.id,
+            user_id=user_id,
+            source_type="text",
+            text_snapshot=text,
+            status="processing",
+        )
+        db.session.add(ingestion)
+        db.session.commit()
+
+        try:
+            ingest_text(doc, ingestion, text)
+        except Exception as exc:
+            log.warning("Re-ingest (text) failed for doc=%s: %s", doc.id, exc)
+            return jsonify({
+                "document": _doc_dict(doc),
+                "ingestion": _ingestion_dict(ingestion),
+                "warning": "Re-ingestion failed. See ingestion status for details.",
+            }), 202
+
+    else:
+        return jsonify({"error": f"Unknown source type: {doc.source_type}"}), 400
+
+    return jsonify({
+        "document": _doc_dict(doc),
+        "ingestion": _ingestion_dict(ingestion),
+    }), 200

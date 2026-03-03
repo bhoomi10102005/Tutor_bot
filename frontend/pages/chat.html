@@ -64,16 +64,43 @@
 
       <!-- Input bar -->
       <div class="chat-input-bar">
-        <textarea
-          id="chat-input"
-          rows="2"
-          placeholder="Ask a question… (Enter to send, Shift+Enter for newline)"
-          disabled
-        ></textarea>
-        <button class="button button-solid send-btn" id="send-btn" disabled>Send</button>
+        <div class="docs-context-strip" id="docs-context-strip" hidden>
+          <span class="docs-context-label" id="docs-context-label">All documents</span>
+          <button type="button" class="docs-select-btn" id="docs-select-btn" title="Pick which documents to search">+ Documents</button>
+        </div>
+        <div class="chat-input-row">
+          <textarea
+            id="chat-input"
+            rows="2"
+            placeholder="Ask a question… (Enter to send, Shift+Enter for newline)"
+            disabled
+          ></textarea>
+          <button class="button button-solid send-btn" id="send-btn" disabled>Send</button>
+        </div>
       </div>
     </section>
 
+  </div>
+
+  <!-- ── Document picker modal ───────────────────────────────────────────── -->
+  <div class="doc-picker-overlay" id="doc-picker-overlay" hidden>
+    <div class="doc-picker-modal" role="dialog" aria-modal="true" aria-label="Select documents for this chat">
+      <div class="doc-picker-head">
+        <h3>Documents for this chat</h3>
+        <button type="button" class="doc-picker-close" id="doc-picker-close" aria-label="Close">✕</button>
+      </div>
+      <p class="doc-picker-hint">
+        Select the documents you want the AI to search for this chat.<br>
+        Leave all unchecked to search <em>all</em> your documents.
+      </p>
+      <div class="doc-picker-list" id="doc-picker-list">
+        <p style="color:var(--muted);font-size:0.9rem;">Loading…</p>
+      </div>
+      <div class="doc-picker-foot">
+        <button type="button" class="button button-ghost" id="doc-picker-clear">Clear all</button>
+        <button type="button" class="button button-solid" id="doc-picker-save">Save</button>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="../assets/js/chat.js"></script>

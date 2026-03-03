@@ -24,6 +24,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from app.db.models.chat import Chat
 from app.db.models.chat_message import ChatMessage
 from app.db.models.chat_message_source import ChatMessageSource
+from app.db.models.document import Document
 from app.extensions import db
 from app.services.rag.answering import generate_answer
 from app.services.router.classifier import classify
@@ -195,13 +196,21 @@ def send_message(chat_id: str):
     prior_messages = [m for m in reversed(prior_messages) if m.id != user_msg.id]
     history = [{"role": m.role, "content": m.content} for m in prior_messages]
 
-    # ── 4. Generate RAG answer ────────────────────────────────────────────────
+    # ── 4. Load per-chat document filter ──────────────────────────────────────
+    selected_docs   = chat.selected_documents.filter(
+        Document.is_deleted.is_(False),
+        Document.current_ingestion_id.isnot(None),
+    ).all()
+    doc_ids_filter  = [d.id for d in selected_docs] if selected_docs else None
+
+    # ── 5. Generate RAG answer ────────────────────────────────────────────
     try:
         result = generate_answer(
             question=content,
             user_id=user_id,
             model=selected_model,
             history=history,
+            document_ids=doc_ids_filter,
         )
     except WrapperError as exc:
         log.error("chat answering failed for user=%s: %s", user_id, exc)
@@ -212,7 +221,7 @@ def send_message(chat_id: str):
     model_used   = result["model"]
     sources_data = result["sources"]
 
-    # ── 5. Save assistant message ─────────────────────────────────────────────
+    # ── 6. Save assistant message ─────────────────────────────────────────────
     assistant_msg = ChatMessage(
         id=str(uuid.uuid4()),
         chat_id=chat_id,
@@ -225,7 +234,7 @@ def send_message(chat_id: str):
     db.session.add(assistant_msg)
     db.session.flush()
 
-    # ── 6. Save source mappings ────────────────────────────────────────────────
+    # ── 7. Save source mappings ────────────────────────────────────────────────
     seen_chunk_ids: set = set()
     for src in sources_data:
         chunk_id = src.get("chunk_id")
@@ -242,7 +251,7 @@ def send_message(chat_id: str):
             )
         )
 
-    # ── 7. Update chat timestamp ──────────────────────────────────────────────
+    # ── 8. Update chat timestamp ──────────────────────────────────────────────
     chat.updated_at = datetime.now(timezone.utc)
 
     # Auto-title the session after the first real exchange
@@ -251,7 +260,7 @@ def send_message(chat_id: str):
 
     db.session.commit()
 
-    # ── 8. Reload sources with relationships ──────────────────────────────────
+    # ── 9. Reload sources with relationships ──────────────────────────────────
     db.session.refresh(assistant_msg)
 
     return jsonify(
@@ -262,3 +271,89 @@ def send_message(chat_id: str):
         }
     ), 200
 
+
+# ── GET /api/chat/sessions/<chat_id>/documents ────────────────────────────────
+
+@chat_bp.get("/sessions/<chat_id>/documents")
+@jwt_required()
+def get_chat_documents(chat_id: str):
+    """
+    Return the documents currently pinned to this chat for RAG context.
+    An empty list means 'search all documents'.
+    """
+    user_id = get_jwt_identity()
+
+    chat = Chat.query.filter_by(id=chat_id, user_id=user_id).first()
+    if not chat:
+        return jsonify({"error": "chat session not found"}), 404
+
+    docs = chat.selected_documents.filter(
+        Document.is_deleted.is_(False),
+    ).all()
+
+    return jsonify(
+        {
+            "chat_id":   chat_id,
+            "documents": [
+                {
+                    "id":          d.id,
+                    "title":       d.title,
+                    "source_type": d.source_type,
+                    "filename":    d.filename,
+                }
+                for d in docs
+            ],
+        }
+    ), 200
+
+
+# ── PUT /api/chat/sessions/<chat_id>/documents ────────────────────────────────
+
+@chat_bp.put("/sessions/<chat_id>/documents")
+@jwt_required()
+def set_chat_documents(chat_id: str):
+    """
+    Replace the document selection for a chat session.
+
+    Request body (JSON):
+        document_ids : list[str]  – IDs to pin (empty list = use all docs)
+
+    All supplied IDs must belong to the authenticated user and must not be
+    deleted; otherwise the whole request is rejected.
+    """
+    user_id = get_jwt_identity()
+
+    chat = Chat.query.filter_by(id=chat_id, user_id=user_id).first()
+    if not chat:
+        return jsonify({"error": "chat session not found"}), 404
+
+    data    = request.get_json(silent=True) or {}
+    doc_ids = data.get("document_ids", [])
+
+    if not isinstance(doc_ids, list):
+        return jsonify({"error": "document_ids must be a list"}), 400
+
+    # De-duplicate
+    doc_ids = list(dict.fromkeys(doc_ids))
+
+    if doc_ids:
+        docs = Document.query.filter(
+            Document.id.in_(doc_ids),
+            Document.user_id == user_id,
+            Document.is_deleted.is_(False),
+        ).all()
+        if len(docs) != len(doc_ids):
+            return jsonify({"error": "one or more document IDs not found"}), 404
+    else:
+        docs = []
+
+    # Replace selection (SQLAlchemy takes care of the junction rows)
+    chat.selected_documents = docs
+    db.session.commit()
+
+    return jsonify(
+        {
+            "chat_id":      chat_id,
+            "document_ids": [d.id for d in docs],
+        }
+    ), 200

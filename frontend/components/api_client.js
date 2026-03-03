@@ -280,6 +280,15 @@ export function getIngestionStatus(accessToken, docId, ingestionId) {
   return authedGet(`/api/documents/${docId}/ingestions/${ingestionId}/status`, accessToken);
 }
 
+/** POST /api/documents/<id>/reingest — retry a failed ingestion */
+export function retryIngestion(accessToken, docId) {
+  return request(`/api/documents/${docId}/reingest`, {
+    method: "POST",
+    token: accessToken,
+    timeoutMs: 120000,
+  });
+}
+
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
 /** POST /api/chat/sessions — create a new chat session */
@@ -308,5 +317,25 @@ export function sendChatMessage(accessToken, chatId, content) {
     token: accessToken,
     payload: { content },
     timeoutMs: 120000,
+  });
+}
+
+/** GET /api/chat/sessions/<id>/documents — get the documents pinned to a chat */
+export function getChatDocuments(accessToken, chatId) {
+  return authedGet(`/api/chat/sessions/${chatId}/documents`, accessToken);
+}
+
+/**
+ * PUT /api/chat/sessions/<id>/documents — replace the document selection.
+ * Pass an empty array to clear the selection (use all documents).
+ * @param {string} accessToken
+ * @param {string} chatId
+ * @param {string[]} documentIds
+ */
+export function setChatDocuments(accessToken, chatId, documentIds) {
+  return request(`/api/chat/sessions/${chatId}/documents`, {
+    method: "PUT",
+    token: accessToken,
+    payload: { document_ids: documentIds },
   });
 }
