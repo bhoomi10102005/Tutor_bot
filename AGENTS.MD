@@ -86,9 +86,8 @@ Operational expectations:
 - normalized error handling in service layer
 
 Model routing policy (target):
-- default tutor: `routeway/glm-4.5-air:free`
-- hard reasoning: `routeway/deepseek-r1:free`
-- coding tasks: `routeway/devstral-2512:free`
+- default/coding/reasoning: `openrouter/google/gemma-3-27b-it:free`
+- fallback (if gemma fails): `gemini/gemini-2.5-flash`
 - classification/fast tasks: `gemini/gemini-2.5-flash`
 - embeddings: `gemini/gemini-embedding-001`
 

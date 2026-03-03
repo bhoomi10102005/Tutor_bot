@@ -18,9 +18,10 @@ from __future__ import annotations
 import re
 
 # ── Model constants ──────────────────────────────────────────────────────────
-MODEL_DEFAULT   = "routeway/glm-4.5-air:free"
-MODEL_REASONING = "routeway/gpt-oss-120b:free"
-MODEL_CODING    = "routeway/devstral-2512:free"
+MODEL_DEFAULT   = "openrouter/google/gemma-3-27b-it:free"
+MODEL_REASONING = "openrouter/google/gemma-3-27b-it:free"
+MODEL_CODING    = "openrouter/google/gemma-3-27b-it:free"
+MODEL_FALLBACK  = "gemini/gemini-2.5-flash"
 MODEL_CLASSIFY  = "gemini/gemini-2.5-flash"
 
 # ── Keyword sets ─────────────────────────────────────────────────────────────

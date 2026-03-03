@@ -37,8 +37,7 @@ from app.services.wrapper.client import WrapperError, get_client
 
 log = logging.getLogger(__name__)
 
-_FALLBACK_FAST   = "gemini/gemini-2.5-flash"   # reliable, low latency — first fallback
-_FALLBACK_MODEL  = "routeway/glm-4.5-air:free"  # tried last if gemini also fails
+_FALLBACK_FAST   = "gemini/gemini-2.5-flash"   # reliable fallback if primary fails
 
 _SYSTEM_TEMPLATE = """\
 You are a knowledgeable and helpful AI tutor. Answer the student's question \
@@ -91,22 +90,24 @@ def _chat_with_fallback(model: str, messages: list, max_tokens: int = 1024) -> t
     """
     fallback_chain = [model]
 
-    # Add fallback models that aren't already in the chain.
-    # Order matters: gemini is reliable and fast, routeway free models are last resort.
-    for fb in [_FALLBACK_FAST, _FALLBACK_MODEL]:
+    # Add gemini as fallback if the primary model (gemma) fails.
+    for fb in [_FALLBACK_FAST]:
         if fb != model:
             fallback_chain.append(fb)
 
     client = get_client()
     last_exc = None
 
-    for attempt_model in fallback_chain:
+    for i, attempt_model in enumerate(fallback_chain):
+        is_last = (i == len(fallback_chain) - 1)
         try:
             resp = client.chat_completions(
                 model=attempt_model,
                 messages=messages,
                 temperature=0.7,
                 max_tokens=max_tokens,
+                # Fail fast on non-last models so 429 immediately tries the next fallback.
+                max_retries=None if is_last else 0,
             )
             text = resp["choices"][0]["message"]["content"]
             if attempt_model != model:

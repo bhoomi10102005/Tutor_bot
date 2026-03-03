@@ -94,9 +94,16 @@ class WrapperClient:
         messages: list,
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
+        max_retries: Optional[int] = None,
     ) -> dict:
         """
         Call POST /v1/chat/completions.
+
+        Parameters
+        ----------
+        max_retries : int | None
+            Override the client-level retry count for this call only.
+            Pass 0 to fail fast (useful when a fallback model is available).
 
         Returns the parsed JSON response dict from the wrapper.
         Raises WrapperError on any failure.
@@ -110,7 +117,7 @@ class WrapperClient:
             payload["max_tokens"] = max_tokens
 
         log.debug("wrapper chat_completions model=%s messages_count=%d", model, len(messages))
-        return self._post("/v1/chat/completions", payload)
+        return self._post("/v1/chat/completions", payload, max_retries=max_retries)
 
     def embeddings(self, model: str, input) -> dict:
         """
@@ -130,8 +137,9 @@ class WrapperClient:
 
     # ── Internal ─────────────────────────────────────────────────────────────
 
-    def _post(self, path: str, payload: dict) -> dict:
+    def _post(self, path: str, payload: dict, max_retries: Optional[int] = None) -> dict:
         url = self._base_url + path
+        retries = self._max_retries if max_retries is None else max_retries
 
         def do_request():
             return requests.post(
@@ -144,7 +152,7 @@ class WrapperClient:
         try:
             response = call_with_retry(
                 do_request,
-                max_retries=self._max_retries,
+                max_retries=retries,
                 base_delay=self._base_delay,
             )
         except requests.exceptions.Timeout:
