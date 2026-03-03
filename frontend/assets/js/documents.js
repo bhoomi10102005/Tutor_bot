@@ -5,6 +5,7 @@ import {
   listDocuments,
   deleteDocument,
   getIngestionStatus,
+  retryIngestion,
 } from "../../components/api_client.js";
 import { clearSession, getSession } from "../../components/session.js";
 
@@ -63,6 +64,11 @@ function startPolling(docId, ingestionId, badgeEl) {
       if (status === "ready" || status === "failed") {
         window.clearInterval(pollingMap.get(docId));
         pollingMap.delete(docId);
+        if (status === "failed") {
+          // Add retry button next to the badge (actionsEl = badge's parent)
+          const actionsEl = badgeEl.parentElement;
+          if (actionsEl) addRetryButton(docId, badgeEl, actionsEl);
+        }
       }
     } catch (_) {
       // silently retry
@@ -73,9 +79,9 @@ function startPolling(docId, ingestionId, badgeEl) {
 
 function updateBadge(el, status) {
   el.className = "badge";
-  if (status === "ready")       el.classList.add("badge-ready");
-  else if (status === "failed") el.classList.add("badge-failed");
-  else                          el.classList.add("badge-processing");
+  if (status === "ready")                           el.classList.add("badge-ready");
+  else if (status === "failed" || status === "no-ingestion") el.classList.add("badge-failed");
+  else                                              el.classList.add("badge-processing");
   el.textContent = status;
 }
 
@@ -248,14 +254,15 @@ function renderDocList(docs) {
     docList.appendChild(item);
 
     // Resolve ingestion status
-    resolveIngestionStatus(doc, badgeEl);
+    resolveIngestionStatus(doc, badgeEl, actionsEl);
   });
 }
 
-async function resolveIngestionStatus(doc, badgeEl) {
+async function resolveIngestionStatus(doc, badgeEl, actionsEl) {
   const ingestionId = doc.current_ingestion_id;
   if (!ingestionId) {
     updateBadge(badgeEl, "no-ingestion");
+    addRetryButton(doc.id, badgeEl, actionsEl);
     return;
   }
   try {
@@ -263,10 +270,50 @@ async function resolveIngestionStatus(doc, badgeEl) {
     updateBadge(badgeEl, res.status);
     if (res.status === "processing") {
       startPolling(doc.id, ingestionId, badgeEl);
+    } else if (res.status === "failed") {
+      addRetryButton(doc.id, badgeEl, actionsEl);
     }
   } catch (_) {
     updateBadge(badgeEl, "unknown");
   }
+}
+
+function addRetryButton(docId, badgeEl, actionsEl) {
+  // Avoid duplicate retry buttons
+  if (actionsEl.querySelector(".retry-btn")) return;
+  const btn = document.createElement("button");
+  btn.className = "button retry-btn";
+  btn.style.cssText = "padding:0.36rem 0.78rem;font-size:0.84rem;border-radius:8px;background:rgba(15,118,110,0.12);color:var(--brand-deep);border:1px solid rgba(15,118,110,0.3);cursor:pointer;";
+  btn.textContent = "Retry";
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    btn.textContent = "Retrying…";
+    updateBadge(badgeEl, "processing");
+    try {
+      const res = await retryIngestion(getToken(), docId);
+      const newIngestionId = res.ingestion?.id;
+      if (newIngestionId) {
+        startPolling(docId, newIngestionId, badgeEl);
+        // Remove retry button — polling will show final status
+        btn.remove();
+      } else {
+        updateBadge(badgeEl, "failed");
+        btn.disabled = false;
+        btn.textContent = "Retry";
+      }
+    } catch (err) {
+      updateBadge(badgeEl, "failed");
+      btn.disabled = false;
+      btn.textContent = "Retry";
+      window.alert(
+        "Re-ingestion failed: " +
+          (err instanceof APIError ? err.message : "unknown error")
+      );
+    }
+  });
+  // Insert retry button before the delete button
+  const delBtn = actionsEl.querySelector(".button-danger");
+  actionsEl.insertBefore(btn, delBtn);
 }
 
 async function confirmDelete(docId, title) {

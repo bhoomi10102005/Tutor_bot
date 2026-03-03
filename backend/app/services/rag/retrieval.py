@@ -70,6 +70,7 @@ def retrieve_chunks(
     query_text: str,
     user_id: str,
     top_k: int = 5,
+    document_ids: List[str] | None = None,
 ) -> List[dict]:
     """
     Embed *query_text* and return the *top_k* most similar chunks belonging
@@ -84,6 +85,10 @@ def retrieve_chunks(
         UUID of the requesting user. Results are strictly scoped to this user.
     top_k : int
         Maximum number of chunks to return (default 5).
+    document_ids : list[str] | None
+        When provided, restrict retrieval to only these document IDs.
+        When ``None`` (or empty list treated as None), all of the user's
+        non-deleted documents with a current ingestion are searched.
 
     Returns
     -------
@@ -105,7 +110,7 @@ def retrieve_chunks(
     # text, where 1.0 = identical and 0.0 = orthogonal.
     distance_expr = Chunk.embedding.cosine_distance(query_vector)
 
-    rows = (
+    base_query = (
         db.session.query(
             Chunk,
             Document,
@@ -122,10 +127,13 @@ def retrieve_chunks(
             # Only chunks from the document's current (latest) ingestion
             Chunk.ingestion_id == Document.current_ingestion_id,
         )
-        .order_by(distance_expr)
-        .limit(top_k)
-        .all()
     )
+
+    # Optional per-chat document filter
+    if document_ids:
+        base_query = base_query.filter(Document.id.in_(document_ids))
+
+    rows = base_query.order_by(distance_expr).limit(top_k).all()
 
     results: List[dict] = []
     for chunk, doc, distance in rows:
@@ -143,9 +151,10 @@ def retrieve_chunks(
         )
 
     log.debug(
-        "retrieve_chunks user_id=%s top_k=%d query_len=%d results=%d",
+        "retrieve_chunks user_id=%s top_k=%d doc_filter=%s query_len=%d results=%d",
         user_id,
         top_k,
+        len(document_ids) if document_ids else "all",
         len(query_text),
         len(results),
     )

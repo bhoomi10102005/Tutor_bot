@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from app.extensions import db
+from app.db.models.chat_document import chat_documents
 
 
 class Chat(db.Model):
@@ -37,6 +38,14 @@ class Chat(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
         order_by="ChatMessage.created_at",
+    )
+
+    # Documents pinned to this chat for RAG context.
+    # Empty → search all user documents.  Non-empty → restrict to these docs.
+    selected_documents = db.relationship(
+        "Document",
+        secondary=chat_documents,
+        lazy="dynamic",
     )
 
     def __repr__(self):
