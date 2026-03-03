@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Documents | Tutor Bot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/app.css">
+  <script src="../config.js"></script>
+</head>
+<body class="app-page">
+
+  <!-- ── Top bar ──────────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="../index.html">Tutor Bot</a>
+      <div class="topbar-actions">
+        <span class="user-chip" data-user-slot></span>
+        <button class="button button-ghost" type="button" data-signout>Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Sub-nav ──────────────────────────────────────────────────────── -->
+  <nav class="subnav">
+    <div class="container subnav-inner">
+      <a class="subnav-link active" href="./documents.html">Documents</a>
+      <a class="subnav-link" href="./chat.html">Chat</a>
+    </div>
+  </nav>
+
+  <!-- ── Main content ─────────────────────────────────────────────────── -->
+  <main class="container">
+    <div class="page-header">
+      <h1>Your Documents</h1>
+      <p>Upload PDFs or add text context. Tutor Bot uses these as the grounding material for chat answers.</p>
+    </div>
+
+    <!-- Section A: Upload PDF -->
+    <section class="card" id="upload-section">
+      <h2 class="card-title">Upload PDF or Text File</h2>
+      <p class="card-desc">Accepted: PDF, .txt, .md — max 20 MB.</p>
+
+      <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="Click or drag a file here to upload">
+        <input type="file" id="file-input" accept=".pdf,.txt,.md,text/plain,text/markdown,application/pdf">
+        <p><strong>Drag &amp; drop</strong> a file here, or <strong>click to browse</strong></p>
+        <p id="selected-file-name" style="margin-top:8px;font-size:0.85rem;color:var(--brand-deep);"></p>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <span>Title (optional — defaults to filename)</span>
+        <input type="text" id="upload-title" placeholder="e.g. Lecture Notes Week 3">
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:12px;align-items:center;">
+        <button class="button button-solid" id="upload-btn" disabled>Upload</button>
+        <span class="status-line" id="upload-status"></span>
+      </div>
+
+      <div class="progress-bar-wrap" id="upload-progress-wrap" hidden>
+        <div class="progress-bar" id="upload-progress-bar"></div>
+      </div>
+    </section>
+
+    <!-- Section B: Add Text Context -->
+    <section class="card" id="text-section">
+      <h2 class="card-title">Add Text Context</h2>
+      <p class="card-desc">Paste any text — lecture notes, summaries, definitions — and name it.</p>
+
+      <div class="field">
+        <span>Title <span style="color:#a13716">*</span></span>
+        <input type="text" id="text-title" placeholder="e.g. Chapter 5 Summary" required>
+      </div>
+      <div class="field">
+        <span>Content <span style="color:#a13716">*</span></span>
+        <textarea id="text-content" rows="7" placeholder="Paste your notes here…"></textarea>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:12px;align-items:center;">
+        <button class="button button-solid" id="text-submit-btn">Add Text</button>
+        <span class="status-line" id="text-status"></span>
+      </div>
+    </section>
+
+    <!-- Section C: Documents list -->
+    <section class="card" id="docs-list-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <h2 class="card-title" style="margin:0;">All Documents</h2>
+        <button class="button button-ghost" id="refresh-docs-btn" style="padding:0.4rem 0.9rem;font-size:0.86rem;">Refresh</button>
+      </div>
+      <div class="doc-list" id="doc-list">
+        <p class="empty-state">Loading…</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="../assets/js/documents.js"></script>
+</body>
+</html>
