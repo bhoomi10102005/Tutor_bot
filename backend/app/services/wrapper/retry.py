@@ -9,11 +9,16 @@ Retries are attempted on status codes 429, 502, 503, 504.
 Backoff is exponential with full jitter:
     sleep = random(0, base_delay * 2 ** attempt)
 For 429 responses the Retry-After header is respected when present.
+
+IMPORTANT: Timeout exceptions are NOT retried — a slow model won't become
+fast on retry and retrying would multiply the total wait time.
 """
 
 import random
 import time
 import logging
+
+import requests
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +49,9 @@ def call_with_retry(fn, max_retries: int = 3, base_delay: float = 1.0):
     for attempt in range(max_retries + 1):
         try:
             response = fn()
+        except requests.exceptions.Timeout:
+            # Timeout is not transient — do not retry, let caller handle it.
+            raise
         except Exception:
             if attempt < max_retries:
                 _sleep(base_delay, attempt)

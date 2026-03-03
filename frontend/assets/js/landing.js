@@ -5,21 +5,20 @@ function applyAuthState() {
   const session = getSession();
   const userSlot = document.querySelector("[data-user-slot]");
   const guestActions = document.querySelectorAll("[data-guest-action]");
+  const authedActions = document.querySelectorAll("[data-authed-action]");
   const signOutButton = document.querySelector("[data-signout]");
 
   if (session?.user) {
     const displayName = session.user.username || session.user.email;
     userSlot.textContent = displayName;
     userSlot.hidden = false;
-    guestActions.forEach((item) => {
-      item.hidden = true;
-    });
+    guestActions.forEach((item) => { item.hidden = true; });
+    authedActions.forEach((item) => { item.hidden = false; });
     signOutButton.hidden = false;
   } else {
     userSlot.hidden = true;
-    guestActions.forEach((item) => {
-      item.hidden = false;
-    });
+    guestActions.forEach((item) => { item.hidden = false; });
+    authedActions.forEach((item) => { item.hidden = true; });
     signOutButton.hidden = true;
   }
 }

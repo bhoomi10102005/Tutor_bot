@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat | Tutor Bot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/app.css">
+  <script src="../config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+</head>
+<body class="app-page">
+
+  <!-- ── Top bar ──────────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="../index.html">Tutor Bot</a>
+      <div class="topbar-actions">
+        <span class="user-chip" data-user-slot></span>
+        <button class="button button-ghost" type="button" data-signout>Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Sub-nav ──────────────────────────────────────────────────────── -->
+  <nav class="subnav">
+    <div class="container subnav-inner">
+      <a class="subnav-link" href="./documents.html">Documents</a>
+      <a class="subnav-link active" href="./chat.html">Chat</a>
+    </div>
+  </nav>
+
+  <!-- ── Chat shell ───────────────────────────────────────────────────── -->
+  <div class="chat-shell">
+
+    <!-- Sidebar: session list -->
+    <aside class="chat-sidebar">
+      <div class="chat-sidebar-header">
+        <h2>Chats</h2>
+        <button class="button button-solid" id="new-chat-btn" style="padding:0.42rem 0.9rem;font-size:0.86rem;">+ New</button>
+      </div>
+      <div class="session-list" id="session-list">
+        <p style="padding:12px;color:var(--muted);font-size:0.88rem;">Loading…</p>
+      </div>
+    </aside>
+
+    <!-- Main: messages + input -->
+    <section class="chat-main">
+      <!-- Message thread -->
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-placeholder" id="chat-placeholder">
+          <h3>Select or start a chat</h3>
+          <p>Pick a session from the sidebar, or click <strong>+ New</strong> to begin.</p>
+        </div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div id="typing-indicator" hidden style="padding:6px 28px;font-size:0.88rem;color:var(--muted);font-style:italic;">
+        Tutor Bot is thinking…
+      </div>
+
+      <!-- Input bar -->
+      <div class="chat-input-bar">
+        <textarea
+          id="chat-input"
+          rows="2"
+          placeholder="Ask a question… (Enter to send, Shift+Enter for newline)"
+          disabled
+        ></textarea>
+        <button class="button button-solid send-btn" id="send-btn" disabled>Send</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script type="module" src="../assets/js/chat.js"></script>
+</body>
+</html>
