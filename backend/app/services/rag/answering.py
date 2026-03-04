@@ -49,6 +49,8 @@ they contain information relevant to the student's question.
 IF the context contains relevant information:
 - Answer the question using the context.
 - Cite sources using [Source N] notation.
+- If the answer is long, break it into clearly labelled sections with headings.
+- Be thorough and complete — do not stop mid-answer.
 
 IF the context does NOT contain relevant information about the question:
 - Reply with ONLY this exact line and nothing else: [NO_CONTEXT]
@@ -63,6 +65,8 @@ _NO_CONTEXT_SYSTEM = """\
 You are a knowledgeable and helpful AI tutor. Answer the student's question \
 accurately and clearly. No document context is available; answer from your \
 general knowledge.
+- If the answer is long, break it into clearly labelled sections with headings.
+- Be thorough and complete — do not stop mid-answer.
 """
 
 
@@ -80,7 +84,7 @@ def _build_context_block(sources: List[dict]) -> str:
     return "\n\n".join(lines)
 
 
-def _chat_with_fallback(model: str, messages: list, max_tokens: int = 1024) -> tuple[str, str]:
+def _chat_with_fallback(model: str, messages: list, max_tokens: int = 4096) -> tuple[str, str]:
     """
     Attempt chat completion with *model*. On failure, try fallback chains.
 
