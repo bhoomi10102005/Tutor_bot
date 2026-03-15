@@ -90,6 +90,98 @@
       line-height: 1.55;
     }
 
+    .document-scope-box {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(250, 245, 235, 0.8);
+      border: 1px solid rgba(29, 35, 53, 0.08);
+    }
+
+    .document-scope-choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      cursor: pointer;
+    }
+
+    .document-scope-choice input {
+      margin-top: 2px;
+      accent-color: var(--brand);
+    }
+
+    .document-picker {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(29, 35, 53, 0.08);
+      background: #fff;
+    }
+
+    .document-picker[hidden] {
+      display: none !important;
+    }
+
+    .document-picker-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .document-picker-head strong {
+      font-size: 0.92rem;
+    }
+
+    .document-picker-summary {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .document-picker-list {
+      display: grid;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .document-picker-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(29, 35, 53, 0.08);
+      background: rgba(250, 245, 235, 0.55);
+      cursor: pointer;
+    }
+
+    .document-picker-item input {
+      margin-top: 2px;
+      accent-color: var(--brand);
+    }
+
+    .document-picker-title {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .document-picker-meta {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
     .result-empty {
       padding: 48px 18px;
       text-align: center;
@@ -290,6 +382,30 @@
             <div class="field" style="flex:1;">
               <label for="time-limit-input">Time Limit (seconds)</label>
               <input id="time-limit-input" name="time_limit_sec" type="number" min="1" step="1" value="600">
+            </div>
+          </div>
+
+          <div class="field">
+            <span>Document Scope</span>
+            <div class="document-scope-box">
+              <label class="document-scope-choice">
+                <input type="radio" name="document-scope" value="all" id="scope-all-docs" checked>
+                <span>Use all ready documents</span>
+              </label>
+              <label class="document-scope-choice">
+                <input type="radio" name="document-scope" value="selected" id="scope-selected-docs">
+                <span>Use selected documents only</span>
+              </label>
+
+              <div class="document-picker" id="document-picker" hidden>
+                <div class="document-picker-head">
+                  <strong>Ready Documents</strong>
+                  <span class="document-picker-summary" id="document-picker-summary">Loading documents...</span>
+                </div>
+                <div class="document-picker-list" id="document-picker-list">
+                  <p class="empty-state" style="padding:12px 0;">Loading documents...</p>
+                </div>
+              </div>
             </div>
           </div>
 

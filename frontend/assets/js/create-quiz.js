@@ -1,4 +1,4 @@
-import { APIError, createQuiz } from "../../components/api_client.js";
+import { APIError, createQuiz, listDocuments } from "../../components/api_client.js";
 import { clearSession, getSession } from "../../components/session.js";
 
 const session = getSession();
@@ -44,10 +44,15 @@ const chatScopeNote = document.getElementById("chat-scope-note");
 const chatScopeTitle = document.getElementById("chat-scope-title");
 const chatScopeBody = document.getElementById("chat-scope-body");
 const quizSetupDesc = document.getElementById("quiz-setup-desc");
+const scopeAllDocsInput = document.getElementById("scope-all-docs");
+const scopeSelectedDocsInput = document.getElementById("scope-selected-docs");
+const documentPicker = document.getElementById("document-picker");
+const documentPickerList = document.getElementById("document-picker-list");
+const documentPickerSummary = document.getElementById("document-picker-summary");
 
 const urlParams = new URLSearchParams(window.location.search);
 const fromChat = urlParams.get("from_chat") === "1";
-const scopedDocumentIds = Array.from(
+const initialScopedDocumentIds = Array.from(
   new Set(
     urlParams
       .getAll("document_id")
@@ -57,9 +62,16 @@ const scopedDocumentIds = Array.from(
 );
 const chatScopeMode = urlParams.get("chat_scope");
 
+let readyDocuments = [];
+let selectedDocumentIds = new Set(initialScopedDocumentIds);
+
 initializeScopeNote();
+initializeDocumentScope();
+loadReadyDocuments();
 
 form.addEventListener("submit", handleCreateQuiz);
+scopeAllDocsInput?.addEventListener("change", handleScopeChange);
+scopeSelectedDocsInput?.addEventListener("change", handleScopeChange);
 
 async function handleCreateQuiz(event) {
   event.preventDefault();
@@ -102,8 +114,16 @@ async function handleCreateQuiz(event) {
     marks,
     difficulty,
   };
-  if (scopedDocumentIds.length > 0) {
-    payload.document_ids = scopedDocumentIds;
+  if (scopeSelectedDocsInput?.checked) {
+    if (!readyDocuments.length) {
+      setStatus("No ready documents are available to select yet.", "err");
+      return;
+    }
+    if (!selectedDocumentIds.size) {
+      setStatus("Select at least one document or switch to all ready documents.", "err");
+      return;
+    }
+    payload.document_ids = [...selectedDocumentIds];
   }
   if (timeLimitSec) {
     payload.time_limit_sec = timeLimitSec;
@@ -155,23 +175,144 @@ function initializeScopeNote() {
   chatScopeNote.hidden = false;
   chatScopeTitle.textContent = "Using this chat's study scope";
 
-  if (scopedDocumentIds.length > 0) {
-    if (quizSetupDesc) {
-      quizSetupDesc.textContent = "This quiz will use the specific documents selected for the chat that sent you here.";
-    }
-    chatScopeBody.textContent = `Using ${pluralize(scopedDocumentIds.length, "document")} from this chat for quiz generation.`;
+  if (initialScopedDocumentIds.length > 0) {
+    chatScopeBody.textContent = `Using ${pluralize(initialScopedDocumentIds.length, "document")} from this chat for quiz generation.`;
     return;
   }
 
   if (chatScopeMode === "all") {
-    if (quizSetupDesc) {
-      quizSetupDesc.textContent = "This quiz will use all ready documents, matching the current chat scope.";
-    }
     chatScopeBody.textContent = "This chat is searching all ready documents, so this quiz will use all ready documents too.";
     return;
   }
 
   chatScopeBody.textContent = "This quiz will follow the document scope from the chat that sent you here.";
+}
+
+function initializeDocumentScope() {
+  if (initialScopedDocumentIds.length > 0) {
+    if (scopeSelectedDocsInput) scopeSelectedDocsInput.checked = true;
+    if (scopeAllDocsInput) scopeAllDocsInput.checked = false;
+  } else if (chatScopeMode === "all") {
+    if (scopeAllDocsInput) scopeAllDocsInput.checked = true;
+    if (scopeSelectedDocsInput) scopeSelectedDocsInput.checked = false;
+  }
+
+  syncDocumentPickerVisibility();
+  updateScopeDescription();
+}
+
+async function loadReadyDocuments() {
+  if (!documentPickerList || !documentPickerSummary) {
+    return;
+  }
+
+  documentPickerList.innerHTML = '<p class="empty-state" style="padding:12px 0;">Loading documents...</p>';
+  documentPickerSummary.textContent = "Loading documents...";
+
+  try {
+    const response = await listDocuments(getToken());
+    const docs = Array.isArray(response?.documents)
+      ? response.documents
+      : Array.isArray(response)
+      ? response
+      : [];
+
+    readyDocuments = docs.filter((doc) => Boolean(doc.current_ingestion_id));
+    const readyIds = new Set(readyDocuments.map((doc) => doc.id));
+    selectedDocumentIds = new Set(
+      [...selectedDocumentIds].filter((docId) => readyIds.has(docId)),
+    );
+
+    renderDocumentPicker();
+  } catch (error) {
+    readyDocuments = [];
+    documentPickerList.innerHTML = `<p class="empty-state" style="padding:12px 0;color:#a13716;">${
+      error instanceof APIError ? escHtml(error.message) : "Failed to load documents."
+    }</p>`;
+    documentPickerSummary.textContent = "Unable to load documents";
+  }
+}
+
+function renderDocumentPicker() {
+  if (!documentPickerList || !documentPickerSummary) {
+    return;
+  }
+
+  if (!readyDocuments.length) {
+    documentPickerList.innerHTML = '<p class="empty-state" style="padding:12px 0;">No ready documents found yet.</p>';
+    documentPickerSummary.textContent = "0 selected";
+    return;
+  }
+
+  documentPickerList.innerHTML = readyDocuments.map((doc) => renderDocumentOption(doc)).join("");
+  documentPickerSummary.textContent = buildDocumentSelectionSummary();
+
+  documentPickerList.querySelectorAll("input[type=checkbox]").forEach((input) => {
+    input.addEventListener("change", () => {
+      const docId = input.value;
+      if (!docId) return;
+      if (input.checked) {
+        selectedDocumentIds.add(docId);
+      } else {
+        selectedDocumentIds.delete(docId);
+      }
+      documentPickerSummary.textContent = buildDocumentSelectionSummary();
+    });
+  });
+}
+
+function renderDocumentOption(doc) {
+  const sourceLabel = doc.source_type === "upload" ? "PDF / File" : "Text";
+  const isChecked = selectedDocumentIds.has(doc.id);
+  return `
+    <label class="document-picker-item" for="quiz-doc-${doc.id}">
+      <input
+        type="checkbox"
+        id="quiz-doc-${doc.id}"
+        value="${doc.id}"
+        ${isChecked ? "checked" : ""}
+      >
+      <span>
+        <span class="document-picker-title">${escHtml(doc.title || "Untitled")}</span>
+        <span class="document-picker-meta">${escHtml(sourceLabel)}</span>
+      </span>
+    </label>
+  `;
+}
+
+function handleScopeChange() {
+  syncDocumentPickerVisibility();
+  updateScopeDescription();
+  if (documentPickerSummary) {
+    documentPickerSummary.textContent = buildDocumentSelectionSummary();
+  }
+}
+
+function syncDocumentPickerVisibility() {
+  if (!documentPicker) {
+    return;
+  }
+  documentPicker.hidden = !scopeSelectedDocsInput?.checked;
+}
+
+function buildDocumentSelectionSummary() {
+  if (!scopeSelectedDocsInput?.checked) {
+    return `${pluralize(readyDocuments.length, "ready document")} available`;
+  }
+  return `${pluralize(selectedDocumentIds.size, "document")} selected`;
+}
+
+function updateScopeDescription() {
+  if (!quizSetupDesc) {
+    return;
+  }
+
+  if (scopeSelectedDocsInput?.checked) {
+    quizSetupDesc.textContent = "This quiz will only use the ready documents selected below.";
+    return;
+  }
+
+  quizSetupDesc.textContent = "Use all ready documents in your workspace. Keep the prompt specific for better questions.";
 }
 
 function renderQuestionPreview(question) {
