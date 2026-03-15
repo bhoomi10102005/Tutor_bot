@@ -341,3 +341,37 @@ export function setChatDocuments(accessToken, chatId, documentIds) {
     payload: { document_ids: documentIds },
   });
 }
+
+// Quiz
+
+export function createQuiz(accessToken, payload) {
+  return authedPost("/api/quizzes", accessToken, payload);
+}
+
+export function listQuizzes(accessToken) {
+  return authedGet("/api/quizzes", accessToken);
+}
+
+export function getQuiz(accessToken, quizId) {
+  return authedGet(`/api/quizzes/${quizId}`, accessToken);
+}
+
+export function getQuizQuestions(accessToken, quizId) {
+  return authedGet(`/api/quizzes/${quizId}/questions`, accessToken);
+}
+
+export function startQuizAttempt(accessToken, quizId) {
+  return authedPost(`/api/quizzes/${quizId}/attempts/start`, accessToken, {});
+}
+
+export function submitQuizAttempt(accessToken, quizId, attemptId, payload) {
+  return authedPost(
+    `/api/quizzes/${quizId}/attempts/${attemptId}/submit`,
+    accessToken,
+    payload,
+  );
+}
+
+export function getQuizAttempt(accessToken, attemptId) {
+  return authedGet(`/api/quizzes/attempts/${attemptId}`, accessToken);
+}

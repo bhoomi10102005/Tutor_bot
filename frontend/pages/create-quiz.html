@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create Quiz | Tutor Bot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/app.css">
+  <script src="../config.js"></script>
+  <style>
+    .quiz-create-grid {
+      display: grid;
+      grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+      padding-bottom: 32px;
+    }
+
+    .quiz-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .meta-tile {
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: var(--bg-soft);
+      border: 1px solid rgba(29, 35, 53, 0.08);
+    }
+
+    .meta-tile-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .meta-tile-value {
+      display: block;
+      margin-top: 4px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .quiz-form-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .helper-note {
+      margin: 14px 0 0;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(15, 118, 110, 0.06);
+      border: 1px solid rgba(15, 118, 110, 0.16);
+      color: var(--brand-deep);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .result-empty {
+      padding: 48px 18px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed rgba(29, 35, 53, 0.18);
+      border-radius: 18px;
+      background: rgba(250, 245, 235, 0.68);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .result-header h2 {
+      margin: 0;
+      font-family: "Sora", sans-serif;
+      font-size: 1.2rem;
+    }
+
+    .result-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .result-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .question-preview-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .question-preview {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(29, 35, 53, 0.1);
+      background: linear-gradient(180deg, rgba(250, 245, 235, 0.8), #ffffff);
+    }
+
+    .question-preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .question-preview-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .question-option-list {
+      display: grid;
+      gap: 10px;
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .question-option {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--surface-strong);
+      border: 1px solid rgba(29, 35, 53, 0.08);
+      font-size: 0.92rem;
+    }
+
+    .question-source-count {
+      margin-top: 12px;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .field select {
+      width: 100%;
+      padding: 0.7rem 0.76rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font: inherit;
+      background: #fff;
+    }
+
+    .field select:focus {
+      border-color: var(--brand);
+      outline: 2px solid rgba(15, 118, 110, 0.28);
+    }
+
+    @media (max-width: 960px) {
+      .quiz-create-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .quiz-meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="app-page">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="10" fill="url(#brand-grad-qc)"/>
+            <path d="M10 20l4-5 4 3 4-7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="10" cy="20" r="1.8" fill="#fff"/>
+            <circle cx="14" cy="15" r="1.8" fill="#fff"/>
+            <circle cx="18" cy="18" r="1.8" fill="#fff"/>
+            <circle cx="22" cy="11" r="1.8" fill="#fff"/>
+            <defs>
+              <linearGradient id="brand-grad-qc" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#0f766e"/>
+                <stop offset="100%" stop-color="#095850"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <span class="brand-name">Tutor Bot</span>
+      </a>
+      <div class="topbar-actions">
+        <div class="nav-user">
+          <span class="user-avatar" data-user-slot></span>
+          <button class="button button-danger" type="button" data-signout>Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="subnav">
+    <div class="container subnav-inner">
+      <a class="subnav-link" href="./documents.html">Documents</a>
+      <a class="subnav-link" href="./chat.html">Chat</a>
+      <a class="subnav-link active" href="./create-quiz.html">Create Quiz</a>
+      <a class="subnav-link" href="./take-quiz.html">Take Quiz</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="page-header">
+      <h1>Create Quiz</h1>
+      <p>Generate a quiz from your ready study material, then jump straight into an attempt.</p>
+    </div>
+
+    <div class="quiz-create-grid">
+      <section class="card">
+        <h2 class="card-title">Quiz Setup</h2>
+        <p class="card-desc">Use all ready documents in your workspace. Keep the prompt specific for better questions.</p>
+
+        <form id="create-quiz-form" novalidate>
+          <div class="field">
+            <label for="topic-input">Topic</label>
+            <input id="topic-input" name="topic" type="text" placeholder="e.g. Python functions and variables" required>
+          </div>
+
+          <div class="field-row">
+            <div class="field" style="flex:1;">
+              <label for="question-count-input">Question Count</label>
+              <input id="question-count-input" name="question_count" type="number" min="1" max="20" step="1" value="5" required>
+            </div>
+            <div class="field" style="flex:1;">
+              <label for="marks-input">Total Marks</label>
+              <input id="marks-input" name="marks" type="number" min="1" step="1" value="10" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field" style="flex:1;">
+              <label for="difficulty-input">Difficulty</label>
+              <select id="difficulty-input" name="difficulty" class="quiz-select">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <div class="field" style="flex:1;">
+              <label for="time-limit-input">Time Limit (seconds)</label>
+              <input id="time-limit-input" name="time_limit_sec" type="number" min="1" step="1" value="600">
+            </div>
+          </div>
+
+          <div class="quiz-form-actions">
+            <button class="button button-solid" id="create-quiz-btn" type="submit">Generate Quiz</button>
+            <span class="status-line" id="create-status"></span>
+          </div>
+        </form>
+
+        <div class="helper-note">
+          Quiz generation needs at least one ready document or text note in your account. If you have not uploaded anything yet, add it from the Documents page first.
+        </div>
+      </section>
+
+      <section class="card">
+        <div id="result-empty" class="result-empty">
+          Generate a quiz to preview the questions here.
+        </div>
+
+        <div id="result-content" hidden>
+          <div class="result-header">
+            <div>
+              <h2 id="result-title">Quiz Ready</h2>
+              <p id="result-subtitle"></p>
+            </div>
+            <div class="result-actions">
+              <a class="button button-solid" id="take-quiz-link" href="./take-quiz.html">Take This Quiz</a>
+              <a class="button button-ghost" href="./take-quiz.html">Open Quiz Library</a>
+            </div>
+          </div>
+
+          <div class="quiz-meta-grid" id="result-meta"></div>
+          <div class="question-preview-list" id="question-preview-list"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="../assets/js/create-quiz.js"></script>
+</body>
+</html>
