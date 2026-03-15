@@ -50,6 +50,7 @@ const sendBtn          = document.getElementById("send-btn");
 const docsContextStrip  = document.getElementById("docs-context-strip");
 const docsContextLabel  = document.getElementById("docs-context-label");
 const docsSelectBtn     = document.getElementById("docs-select-btn");
+const quizChatBtn       = document.getElementById("quiz-chat-btn");
 const docPickerOverlay  = document.getElementById("doc-picker-overlay");
 const docPickerList     = document.getElementById("doc-picker-list");
 const docPickerClose    = document.getElementById("doc-picker-close");
@@ -422,6 +423,26 @@ function updateDocsContextStrip() {
   }
 }
 
+function goToQuizForActiveChat() {
+  if (!activeChatId) return;
+
+  const params = new URLSearchParams();
+  params.set("from_chat", "1");
+  params.set("chat_id", activeChatId);
+
+  if (activeDocSelection.length > 0) {
+    activeDocSelection.forEach((doc) => {
+      if (doc?.id) {
+        params.append("document_id", doc.id);
+      }
+    });
+  } else {
+    params.set("chat_scope", "all");
+  }
+
+  window.location.href = `./create-quiz.html?${params.toString()}`;
+}
+
 // ── Document picker ───────────────────────────────────────────────────────────
 
 // IDs checked in the picker modal (may differ from activeDocSelection until saved)
@@ -522,6 +543,7 @@ async function saveDocSelection() {
 
 // Event listeners for picker
 if (docsSelectBtn)  docsSelectBtn.addEventListener("click", openDocPicker);
+if (quizChatBtn) quizChatBtn.addEventListener("click", goToQuizForActiveChat);
 if (docPickerClose) docPickerClose.addEventListener("click", closeDocPicker);
 if (docPickerSave)  docPickerSave.addEventListener("click", saveDocSelection);
 if (docPickerClear) {

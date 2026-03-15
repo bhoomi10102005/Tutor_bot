@@ -40,6 +40,24 @@ const resultSubtitle = document.getElementById("result-subtitle");
 const resultMeta = document.getElementById("result-meta");
 const questionPreviewList = document.getElementById("question-preview-list");
 const takeQuizLink = document.getElementById("take-quiz-link");
+const chatScopeNote = document.getElementById("chat-scope-note");
+const chatScopeTitle = document.getElementById("chat-scope-title");
+const chatScopeBody = document.getElementById("chat-scope-body");
+const quizSetupDesc = document.getElementById("quiz-setup-desc");
+
+const urlParams = new URLSearchParams(window.location.search);
+const fromChat = urlParams.get("from_chat") === "1";
+const scopedDocumentIds = Array.from(
+  new Set(
+    urlParams
+      .getAll("document_id")
+      .map((value) => value.trim())
+      .filter(Boolean),
+  ),
+);
+const chatScopeMode = urlParams.get("chat_scope");
+
+initializeScopeNote();
 
 form.addEventListener("submit", handleCreateQuiz);
 
@@ -84,6 +102,9 @@ async function handleCreateQuiz(event) {
     marks,
     difficulty,
   };
+  if (scopedDocumentIds.length > 0) {
+    payload.document_ids = scopedDocumentIds;
+  }
   if (timeLimitSec) {
     payload.time_limit_sec = timeLimitSec;
   }
@@ -124,6 +145,33 @@ function renderQuizResult(quiz, questions) {
 
   questionPreviewList.innerHTML = questions.map((question) => renderQuestionPreview(question)).join("");
   resultContent.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function initializeScopeNote() {
+  if (!fromChat || !chatScopeNote || !chatScopeTitle || !chatScopeBody) {
+    return;
+  }
+
+  chatScopeNote.hidden = false;
+  chatScopeTitle.textContent = "Using this chat's study scope";
+
+  if (scopedDocumentIds.length > 0) {
+    if (quizSetupDesc) {
+      quizSetupDesc.textContent = "This quiz will use the specific documents selected for the chat that sent you here.";
+    }
+    chatScopeBody.textContent = `Using ${pluralize(scopedDocumentIds.length, "document")} from this chat for quiz generation.`;
+    return;
+  }
+
+  if (chatScopeMode === "all") {
+    if (quizSetupDesc) {
+      quizSetupDesc.textContent = "This quiz will use all ready documents, matching the current chat scope.";
+    }
+    chatScopeBody.textContent = "This chat is searching all ready documents, so this quiz will use all ready documents too.";
+    return;
+  }
+
+  chatScopeBody.textContent = "This quiz will follow the document scope from the chat that sent you here.";
 }
 
 function renderQuestionPreview(question) {

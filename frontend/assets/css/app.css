@@ -576,6 +576,13 @@
   flex: 1;
 }
 
+.docs-context-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .docs-select-btn {
   flex-shrink: 0;
   padding: 3px 10px;
@@ -591,6 +598,24 @@
 
 .docs-select-btn:hover {
   background: rgba(15, 118, 110, 0.1);
+}
+
+.docs-quiz-btn {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border: 1px solid rgba(180, 83, 9, 0.36);
+  border-radius: 20px;
+  background: rgba(180, 83, 9, 0.09);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 140ms, color 140ms, border-color 140ms;
+}
+
+.docs-quiz-btn:hover {
+  background: rgba(180, 83, 9, 0.16);
+  border-color: rgba(180, 83, 9, 0.5);
 }
 
 /* The textarea + Send row */
@@ -778,5 +803,15 @@
 
   .message-bubble {
     max-width: 92%;
+  }
+
+  .docs-context-strip {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .docs-context-actions {
+    width: 100%;
+    flex-wrap: wrap;
   }
 }

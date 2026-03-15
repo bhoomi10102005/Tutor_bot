@@ -69,6 +69,27 @@
       line-height: 1.55;
     }
 
+    .scope-note {
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(180, 83, 9, 0.08);
+      border: 1px solid rgba(180, 83, 9, 0.18);
+      color: #7d4313;
+    }
+
+    .scope-note strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    .scope-note p {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
     .result-empty {
       padding: 48px 18px;
       text-align: center;
@@ -230,10 +251,15 @@
       <p>Generate a quiz from your ready study material, then jump straight into an attempt.</p>
     </div>
 
+    <section id="chat-scope-note" class="scope-note" hidden>
+      <strong id="chat-scope-title">Using this chat's documents</strong>
+      <p id="chat-scope-body"></p>
+    </section>
+
     <div class="quiz-create-grid">
       <section class="card">
         <h2 class="card-title">Quiz Setup</h2>
-        <p class="card-desc">Use all ready documents in your workspace. Keep the prompt specific for better questions.</p>
+        <p class="card-desc" id="quiz-setup-desc">Use all ready documents in your workspace. Keep the prompt specific for better questions.</p>
 
         <form id="create-quiz-form" novalidate>
           <div class="field">
