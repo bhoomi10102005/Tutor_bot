@@ -6,6 +6,11 @@ from app.db.models.chat_document import chat_documents
 from app.db.models.chat import Chat
 from app.db.models.chat_message import ChatMessage
 from app.db.models.chat_message_source import ChatMessageSource
+from app.db.models.quiz import Quiz
+from app.db.models.quiz_question import QuizQuestion
+from app.db.models.quiz_question_source import QuizQuestionSource
+from app.db.models.quiz_attempt import QuizAttempt
+from app.db.models.quiz_attempt_answer import QuizAttemptAnswer
 
 __all__ = [
     "User",
@@ -16,4 +21,9 @@ __all__ = [
     "Chat",
     "ChatMessage",
     "ChatMessageSource",
+    "Quiz",
+    "QuizQuestion",
+    "QuizQuestionSource",
+    "QuizAttempt",
+    "QuizAttemptAnswer",
 ]
