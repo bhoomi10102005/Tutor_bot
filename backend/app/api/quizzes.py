@@ -147,6 +147,20 @@ def _load_attempt_answers(attempt_id: str) -> list[QuizAttemptAnswer]:
     )
 
 
+def _latest_submitted_attempt_id(user_id: str, quiz_id: str) -> str | None:
+    attempt = (
+        QuizAttempt.query
+        .filter(
+            QuizAttempt.quiz_id == quiz_id,
+            QuizAttempt.user_id == user_id,
+            QuizAttempt.submitted_at.isnot(None),
+        )
+        .order_by(QuizAttempt.submitted_at.desc(), QuizAttempt.started_at.desc())
+        .first()
+    )
+    return attempt.id if attempt else None
+
+
 @quizzes_bp.post("")
 @jwt_required()
 def create_quiz():
@@ -213,6 +227,7 @@ def get_quiz_questions(quiz_id: str):
         {
             "quiz": _quiz_to_dict(quiz),
             "questions": [_question_to_dict(question) for question in questions],
+            "latest_submitted_attempt_id": _latest_submitted_attempt_id(user_id, quiz.id),
         }
     ), 200
 

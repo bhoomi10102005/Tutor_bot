@@ -320,6 +320,17 @@ try:
     require(before_payload["answers"] == [], "attempt should not have stored answers yet")
     print("pre-submit get endpoint passed")
 
+    questions_before_submit = client.get(
+        f"/api/quizzes/{quiz_id}/questions",
+        headers=auth_header(token_a),
+    )
+    check(questions_before_submit, 200)
+    require(
+        questions_before_submit.get_json()["latest_submitted_attempt_id"] is None,
+        "questions endpoint should not report a submitted attempt before submit",
+    )
+    print("questions endpoint reports no submitted attempt before submit")
+
     invalid_submit = client.post(
         f"/api/quizzes/{quiz_id}/attempts/{attempt_id}/submit",
         headers=auth_header(token_a),
@@ -397,6 +408,17 @@ try:
     require(len(after_payload["answers"]) == 2, "get attempt should return two graded answers")
     require("correct_json" in after_payload["answers"][0], "get attempt should expose correct_json after submit")
     print("get attempt endpoint returned stored result")
+
+    questions_after_submit = client.get(
+        f"/api/quizzes/{quiz_id}/questions",
+        headers=auth_header(token_a),
+    )
+    check(questions_after_submit, 200)
+    require(
+        questions_after_submit.get_json()["latest_submitted_attempt_id"] == attempt_id,
+        "questions endpoint should report the latest submitted attempt id after submit",
+    )
+    print("questions endpoint reports the latest submitted attempt after submit")
 
     get_attempt_other = client.get(
         f"/api/quizzes/attempts/{attempt_id}",

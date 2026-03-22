@@ -1,5 +1,6 @@
 import {
   APIError,
+  getQuizAttempt,
   getQuizQuestions,
   listQuizzes,
   startQuizAttempt,
@@ -166,6 +167,19 @@ async function selectQuiz(quizId, { skipPrompt = false } = {}) {
     const response = await getQuizQuestions(getToken(), quizId);
     selectedQuiz = response.quiz;
     selectedQuestions = Array.isArray(response.questions) ? response.questions : [];
+    const latestSubmittedAttemptId = response?.latest_submitted_attempt_id || null;
+    if (latestSubmittedAttemptId) {
+      try {
+        const attemptResponse = await getQuizAttempt(getToken(), latestSubmittedAttemptId);
+        selectedQuiz = attemptResponse.quiz || selectedQuiz;
+        selectedQuestions = Array.isArray(attemptResponse.questions)
+          ? attemptResponse.questions
+          : selectedQuestions;
+        submittedResult = attemptResponse;
+      } catch (_) {
+        submittedResult = null;
+      }
+    }
     renderQuizList();
     renderStage();
   } catch (error) {
