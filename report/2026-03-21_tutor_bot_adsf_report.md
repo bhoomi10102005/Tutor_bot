@@ -69,10 +69,10 @@ Current in-scope features:
 - out-of-context handling with optional general knowledge retry
 - quiz generation from all ready or selected ready documents
 - quiz attempts, grading, explanations, and summaries
+- analytics event tracking, metrics APIs, and dashboard views
 
 Current out-of-scope or pending items:
 
-- analytics dashboard and analytics APIs
 - asynchronous background ingestion workers
 - streaming chat responses
 - full CI/CD pipeline and production hardening
@@ -91,7 +91,7 @@ Tutor Bot creates value in the following ways:
 
 Recommended next improvements are:
 
-1. Implement analytics APIs and frontend dashboards for study progress visibility.
+1. Expand analytics with custom date filters, export options, and deeper topic-level drilldowns.
 2. Move ingestion from request-time processing to background workers.
 3. Add browser-based end-to-end tests and CI automation.
 4. Add production deployment hardening, logging, monitoring, and observability.
@@ -99,7 +99,7 @@ Recommended next improvements are:
 
 ### Conclusion
 
-Tutor Bot successfully demonstrates a practical AI-supported study platform built around user-owned documents. The current implementation already supports the core academic workflow of upload -> understand -> ask -> revise -> test. The system architecture is modular, scalable in design, and ready for future expansion into analytics and more advanced learning support.
+Tutor Bot successfully demonstrates a practical AI-supported study platform built around user-owned documents. The current implementation already supports the core academic workflow of upload -> understand -> ask -> revise -> test -> measure progress. The system architecture is modular, scalable in design, and already includes a user-scoped analytics layer for studying activity and quiz performance.
 
 ---
 
@@ -120,8 +120,9 @@ This estimate is prepared for academic reporting purposes based on the implement
 | Chat Scope and OOC Handling | per-chat document selection, out-of-context choice flow | 18 |
 | Quiz Module | schema, generation, validation, attempts, grading, summary | 34 |
 | Frontend Integration | multi-page UI, API client, auth guards, page controllers | 30 |
-| Testing and Documentation | integration tests, README updates, report preparation | 22 |
-| Total |  | 240 |
+| Analytics Module | event tracking, metrics APIs, dashboard UI | 18 |
+| Testing and Documentation | integration tests, README updates, report preparation | 24 |
+| Total |  | 258 |
 
 ### Resource Estimate
 
@@ -146,7 +147,7 @@ Major effort risks:
 
 ### Logical Design
 
-The logical design of Tutor Bot is centered on five major business flows:
+The logical design of Tutor Bot is centered on six major business flows:
 
 1. User Authentication
    - A user registers, logs in, refreshes tokens, and accesses protected resources.
@@ -162,6 +163,9 @@ The logical design of Tutor Bot is centered on five major business flows:
 5. Quiz Creation and Attempt Flow
    - A user creates a quiz from the available ready documents.
    - The system retrieves grounded content, generates structured quiz JSON, validates it, stores the quiz, and enables attempts and grading.
+6. Analytics and Study Feedback
+   - The system records key user study actions as analytics events.
+   - The user opens the analytics dashboard to review overview totals, activity trends, score trends, and weak-topic summaries.
 
 ### System Architecture
 
@@ -169,7 +173,7 @@ Tutor Bot follows a layered architecture:
 
 - Presentation Layer: static browser frontend
 - API Layer: Flask route blueprints
-- Service Layer: wrapper, RAG, router, and quiz services
+- Service Layer: wrapper, RAG, router, quiz, and analytics services
 - Data Layer: PostgreSQL + pgvector
 - External AI Layer: wrapper service for chat completions and embeddings
 
@@ -186,10 +190,15 @@ flowchart TB
         D --> A2[Documents API]
         D --> A3[Chat API]
         D --> A4[Quiz API]
+        D --> A5[Analytics API]
 
         A2 --> S1[RAG Ingestion Service]
         A3 --> S2[Router + Retrieval + Answering]
         A4 --> S3[Quiz Generation + Validation + Grading]
+        A2 --> S4[Analytics Event Tracking]
+        A3 --> S4
+        A4 --> S4
+        A5 --> S5[Analytics Metrics Service]
         S1 --> W[Wrapper Client]
         S2 --> W
         S3 --> W
@@ -1442,3 +1451,4 @@ This report reflects the implemented repository state as of March 21, 2026, incl
 - quiz generation and attempts
 
 Analytics features are intentionally described as pending because they are not implemented in the current codebase.
+ features are intentionally described as pending because they are not implemented in the current codebase.
